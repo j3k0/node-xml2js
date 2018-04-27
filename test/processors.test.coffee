@@ -1,5 +1,5 @@
 processors = require '../lib/processors'
-xml2js = require '../lib/xml2js'
+xmljs2 = require '../lib/xmljs2'
 assert = require 'assert'
 equ = assert.equal
 
@@ -52,19 +52,19 @@ module.exports =
     equ processors.parseBooleans('x'), 'x'
     equ processors.parseBooleans(''), ''
     test.done()
-    
+
   'test a processor that filters by node name': (test) ->
     xml = '<account><accountNumber>0012345</accountNumber><balance>123.45</balance></account>'
     options = { valueProcessors: [parseNumbersExceptAccount] }
-    xml2js.parseString xml, options, (err, parsed) ->
+    xmljs2.parseString xml, options, (err, parsed) ->
       equ parsed.account.accountNumber, '0012345'
       equ parsed.account.balance, 123.45
       test.finish()
-      
+
   'test a processor that filters by attr name': (test) ->
     xml = '<account accountNumber="0012345" balance="123.45" />'
     options = { attrValueProcessors: [parseNumbersExceptAccount] }
-    xml2js.parseString xml, options, (err, parsed) ->
+    xmljs2.parseString xml, options, (err, parsed) ->
       equ parsed.account.$.accountNumber, '0012345'
       equ parsed.account.$.balance, 123.45
       test.finish()

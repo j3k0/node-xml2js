@@ -1,5 +1,5 @@
 # use zap to run tests, it also detects CoffeeScript files
-xml2js = require '../lib/xml2js'
+xmljs2 = require '../lib/xmljs2'
 fs = require 'fs'
 util = require 'util'
 assert = require 'assert'
@@ -13,7 +13,7 @@ skeleton = (options, checks) ->
   (test) ->
     xmlString = options?.__xmlString
     delete options?.__xmlString
-    x2js = new xml2js.Parser options
+    x2js = new xmljs2.Parser options
     x2js.addListener 'end', (r) ->
       checks r
       test.finish()
@@ -47,7 +47,7 @@ validator = (xpath, currentValue, newValue) ->
     if not currentValue
       return newValue
   else if xpath == '/validationerror'
-    throw new xml2js.ValidationError("Validation error!")
+    throw new xmljs2.ValidationError("Validation error!")
   return newValue
 
 # shortcut, because it is quite verbose
@@ -299,7 +299,7 @@ module.exports =
     equ r.sample.listtest[0].item[2], 'Quux.')
 
   'test simple callback mode': (test) ->
-    x2js = new xml2js.Parser()
+    x2js = new xmljs2.Parser()
     fs.readFile fileName, (err, data) ->
       equ err, null
       x2js.parseString data, (err, r) ->
@@ -310,7 +310,7 @@ module.exports =
 
   'test simple callback with options': (test) ->
     fs.readFile fileName, (err, data) ->
-      xml2js.parseString data,
+      xmljs2.parseString data,
         trim: true
         normalize: true,
         (err, r) ->
@@ -319,7 +319,7 @@ module.exports =
           test.finish()
 
   'test double parse': (test) ->
-    x2js = new xml2js.Parser()
+    x2js = new xmljs2.Parser()
     fs.readFile fileName, (err, data) ->
       equ err, null
       x2js.parseString data, (err, r) ->
@@ -332,7 +332,7 @@ module.exports =
           test.finish()
 
   'test element with garbage XML': (test) ->
-    x2js = new xml2js.Parser()
+    x2js = new xmljs2.Parser()
     xmlString = "<<>fdfsdfsdf<><<><??><<><>!<>!<!<>!."
     x2js.parseString xmlString, (err, result) ->
       assert.notEqual err, null
@@ -340,7 +340,7 @@ module.exports =
 
   'test simple function without options': (test) ->
     fs.readFile fileName, (err, data) ->
-      xml2js.parseString data, (err, r) ->
+      xmljs2.parseString data, (err, r) ->
         equ err, null
         equ r.sample.chartest[0]._, 'Character data here!'
         test.finish()
@@ -348,14 +348,14 @@ module.exports =
   'test simple function with options': (test) ->
     fs.readFile fileName, (err, data) ->
       # well, {} still counts as option, right?
-      xml2js.parseString data, {}, (err, r) ->
+      xmljs2.parseString data, {}, (err, r) ->
         equ err, null
         equ r.sample.chartest[0]._, 'Character data here!'
         test.finish()
 
   'test async execution': (test) ->
     fs.readFile fileName, (err, data) ->
-      xml2js.parseString data, async: true, (err, r) ->
+      xmljs2.parseString data, async: true, (err, r) ->
         equ err, null
         equ r.sample.chartest[0]._, 'Character data here!'
         test.finish()
@@ -376,7 +376,7 @@ module.exports =
     equ r.sample.arraytest[0].item[1].subitem[1], 'Bar.')
 
   'test validation error': (test) ->
-    x2js = new xml2js.Parser({validator: validator})
+    x2js = new xmljs2.Parser({validator: validator})
     x2js.parseString '<validationerror/>', (err, r) ->
       equ err.message, 'Validation error!'
       test.finish()
@@ -384,7 +384,7 @@ module.exports =
   'test error throwing after an error (async)': (test) ->
     xml = '<?xml version="1.0" encoding="utf-8"?><test node is not okay>content is ok</test node is not okay>'
     nCalled = 0
-    xml2js.parseString xml, async: true, (err, parsed) ->
+    xmljs2.parseString xml, async: true, (err, parsed) ->
       # Make sure no future changes break this
       ++nCalled
       if nCalled > 1
@@ -407,7 +407,7 @@ module.exports =
   'test callback should be called once': (test) ->
     xml = '<?xml version="1.0" encoding="utf-8"?><test>test</test>'
     i = 0
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       i = i + 1
       if i > 1
         throw new Error 'Callback shoud be called once'
@@ -416,7 +416,7 @@ module.exports =
   'test no error event after end': (test) ->
     xml = '<?xml version="1.0" encoding="utf-8"?><test>test</test>'
     i = 0
-    x2js = new xml2js.Parser()
+    x2js = new xmljs2.Parser()
     x2js.on 'error', ->
       i = i + 1
 
@@ -437,40 +437,40 @@ module.exports =
 
   'test empty CDATA': (test) ->
     xml = '<xml><Label><![CDATA[]]></Label><MsgId>5850440872586764820</MsgId></xml>'
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       equ parsed.xml.Label[0], ''
       test.finish()
 
   'test CDATA whitespaces result': (test) ->
     xml = '<spacecdatatest><![CDATA[ ]]></spacecdatatest>'
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       equ parsed.spacecdatatest, ' '
       test.finish()
 
   'test escaped CDATA result': (test) ->
     xml = '<spacecdatatest><![CDATA[]]]]><![CDATA[>]]></spacecdatatest>'
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       equ parsed.spacecdatatest, ']]>'
       test.finish()
 
   'test escaped CDATA result': (test) ->
     xml = '<spacecdatatest><![CDATA[]]]]><![CDATA[>]]></spacecdatatest>'
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       equ parsed.spacecdatatest, ']]>'
       test.finish()
 
   'test non-strict parsing': (test) ->
     html = '<html><head></head><body><br></body></html>'
-    xml2js.parseString html, strict: false, (err, parsed) ->
+    xmljs2.parseString html, strict: false, (err, parsed) ->
       equ err, null
       test.finish()
 
   'test construction with new and without': (test) ->
     demo = '<xml><foo>Bar</foo></xml>'
-    withNew = new xml2js.Parser
+    withNew = new xmljs2.Parser
     withNew.parseString demo, (err, resWithNew) ->
       equ err, null
-      withoutNew = xml2js.Parser()
+      withoutNew = xmljs2.Parser()
       withoutNew.parseString demo, (err, resWithoutNew) ->
         equ err, null
         assert.deepEqual resWithNew, resWithoutNew
@@ -478,37 +478,37 @@ module.exports =
 
   'test not closed but well formed xml': (test) ->
     xml = "<test>"
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       assert.equal err.message, 'Unclosed root tag\nLine: 0\nColumn: 6\nChar: '
       test.finish()
 
   'test cdata-named node': (test) ->
     xml = "<test><cdata>hello</cdata></test>"
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       assert.equal parsed.test.cdata[0], 'hello'
       test.finish()
 
   'test onend with empty xml': (test) ->
     xml = "<?xml version=\"1.0\"?>"
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       assert.equal parsed, null
       test.finish()
 
   'test parsing null': (test) ->
     xml = null
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       assert.notEqual err, null
       test.finish()
 
   'test parsing undefined': (test) ->
     xml = undefined
-    xml2js.parseString xml, (err, parsed) ->
+    xmljs2.parseString xml, (err, parsed) ->
       assert.notEqual err, null
       test.finish()
 
   'test chunked processing': (test) ->
     xml = "<longstuff>abcdefghijklmnopqrstuvwxyz</longstuff>"
-    xml2js.parseString xml, chunkSize: 10, (err, parsed) ->
+    xmljs2.parseString xml, chunkSize: 10, (err, parsed) ->
       equ err, null
       equ parsed.longstuff, 'abcdefghijklmnopqrstuvwxyz'
       test.finish()
@@ -548,7 +548,7 @@ module.exports =
 
   'test single tagNameProcessors in simple callback': (test) ->
     fs.readFile fileName, (err, data) ->
-      xml2js.parseString data, tagNameProcessors: [nameToUpperCase], (err, r)->
+      xmljs2.parseString data, tagNameProcessors: [nameToUpperCase], (err, r)->
         console.log 'Result object: ' + util.inspect r, false, 10
         equ r.hasOwnProperty('SAMPLE'), true
         equ r.SAMPLE.hasOwnProperty('TAGNAMEPROCESSTEST'), true
@@ -561,7 +561,7 @@ module.exports =
 
   'test source map with defaults': (test) ->
     xml = "<a>\n  <b>hello</b>\n  <c><d/></c>\n</a>"
-    xml2js.parseString xml, {sourcemap: true}, (err, parsed) ->
+    xmljs2.parseString xml, {sourcemap: true}, (err, parsed) ->
       # sourcemap doesn't appear, but can be accessed anyway
       equ JSON.stringify(parsed).indexOf("$source") < 0, true
       equ parsed.a.$source.start.line, 0
@@ -575,7 +575,7 @@ module.exports =
 
   'test source map with sourcemapEnumerable': (test) ->
     xml = "<a>\n  <b>hello</b>\n  <c><d/></c>\n</a>"
-    xml2js.parseString xml, {sourcemap: true, sourcemapEnumerable: true}, (err, parsed) ->
+    xmljs2.parseString xml, {sourcemap: true, sourcemapEnumerable: true}, (err, parsed) ->
       # sourcemap is public
       equ JSON.stringify(parsed).indexOf("$source") > 0, true
       equ parsed.a.$source.start.line, 0
@@ -589,7 +589,7 @@ module.exports =
 
   'test return a promise': (test)->
     xml = '<xml></xml>'
-    ret = xml2js.parseString(xml)
+    ret = xmljs2.parseString(xml)
     assert.ok ret instanceof Promise
     ret
       .then (r) ->

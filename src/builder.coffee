@@ -69,7 +69,7 @@ class exports.Builder
             for childObj in child
               element = render(element.ele(childObj.name), childObj.node).up()
           else
-            throw new Error 'Invalid object given to xml2js builder'
+            throw new Error 'Invalid object given to xmljs2 builder'
 
       element
 

@@ -1,5 +1,5 @@
 # use zap to run tests, it also detects CoffeeScript files
-xml2js = require '../lib/xml2js'
+xmljs2 = require '../lib/xmljs2'
 assert = require 'assert'
 fs = require 'fs'
 path = require 'path'
@@ -20,7 +20,7 @@ module.exports =
   'test building basic XML structure': (test) ->
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xml><Label/><MsgId>5850440872586764820</MsgId></xml>'
     obj = {"xml":{"Label":[""],"MsgId":["5850440872586764820"]}}
-    builder = new xml2js.Builder renderOpts: pretty: false
+    builder = new xmljs2.Builder renderOpts: pretty: false
     actual = builder.buildObject obj
     diffeq expected, actual
     test.finish()
@@ -30,7 +30,7 @@ module.exports =
     opts =
       renderOpts: pretty: false
       xmldec: 'version': '1.2', 'encoding': 'WTF-8', 'standalone': false
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     actual = builder.buildObject {}
     diffeq expected, actual
     test.finish()
@@ -43,7 +43,7 @@ module.exports =
       </xml>
 
     """
-    builder = new xml2js.Builder()
+    builder = new xmljs2.Builder()
     obj = {"xml":{"MsgId":["5850440872586764820"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -58,7 +58,7 @@ module.exports =
 
     """
     opts = renderOpts: pretty: true, indent: '    '
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":["5850440872586764820"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -74,7 +74,7 @@ module.exports =
     opts =
       renderOpts: pretty: true, indent: '    '
       headless: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":["5850440872586764820"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -91,7 +91,7 @@ module.exports =
     opts =
       renderOpts: pretty: true, indent: '    '
       allowSurrogateChars: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":["\uD83D\uDC33"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -100,7 +100,7 @@ module.exports =
   'test explicit rootName is always used: 1. when there is only one element': (test) ->
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><FOO><MsgId>5850440872586764820</MsgId></FOO>'
     opts = renderOpts: {pretty: false}, rootName: 'FOO'
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"MsgId":["5850440872586764820"]}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -109,7 +109,7 @@ module.exports =
   'test explicit rootName is always used: 2. when there are multiple elements': (test) ->
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><FOO><MsgId>5850440872586764820</MsgId></FOO>'
     opts = renderOpts: {pretty: false}, rootName: 'FOO'
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"MsgId":["5850440872586764820"]}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -118,7 +118,7 @@ module.exports =
   'test default rootName is used when there is more than one element in the hash': (test) ->
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root><MsgId>5850440872586764820</MsgId><foo>bar</foo></root>'
     opts = renderOpts: pretty: false
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"MsgId":["5850440872586764820"],"foo":"bar"}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -127,7 +127,7 @@ module.exports =
   'test when there is only one first-level element in the hash, that is used as root': (test) ->
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><first><MsgId>5850440872586764820</MsgId><foo>bar</foo></first>'
     opts = renderOpts: pretty: false
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"first":{"MsgId":["5850440872586764820"],"foo":"bar"}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -137,16 +137,16 @@ module.exports =
     fileName = path.join __dirname, '/fixtures/build_sample.xml'
     fs.readFile fileName, (err, xmlData) ->
       xmlExpected = xmlData.toString()
-      xml2js.parseString xmlData, {'trim': true}, (err, obj) ->
+      xmljs2.parseString xmlData, {'trim': true}, (err, obj) ->
         equ err, null
-        builder = new xml2js.Builder({})
+        builder = new xmljs2.Builder({})
         xmlActual = builder.buildObject obj
         diffeq xmlExpected, xmlActual
         test.finish()
 
   'test building obj with undefined value' : (test) ->
     obj = { node: 'string', anothernode: undefined }
-    builder = new xml2js.Builder renderOpts: { pretty: false }
+    builder = new xmljs2.Builder renderOpts: { pretty: false }
     actual = builder.buildObject(obj);
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root><node>string</node><anothernode/></root>'
     equ actual, expected
@@ -154,7 +154,7 @@ module.exports =
 
   'test building obj with null value' : (test) ->
     obj = { node: 'string', anothernode: null }
-    builder = new xml2js.Builder renderOpts: { pretty: false }
+    builder = new xmljs2.Builder renderOpts: { pretty: false }
     actual = builder.buildObject(obj);
     expected = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root><node>string</node><anothernode/></root>'
     equ actual, expected
@@ -168,7 +168,7 @@ module.exports =
       </xml>
 
     """
-    builder = new xml2js.Builder
+    builder = new xmljs2.Builder
     obj = {"xml":{"MsgId":["&amp;&lt;&gt;"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -183,7 +183,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":["& <<"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -198,7 +198,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":["& <<]]>"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -214,7 +214,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":["& <<"],"Message":["Hello"]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -229,7 +229,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":"& <<"}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -244,7 +244,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":10}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -260,7 +260,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = {"xml":{"MsgId":[10, 12]}}
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -276,7 +276,7 @@ module.exports =
 
     """
     opts = cdata: true
-    builder = new xml2js.Builder opts
+    builder = new xmljs2.Builder opts
     obj = [{"MsgId": 10}, {"MsgId2": 12}]
     actual = builder.buildObject obj
     diffeq expected, actual
@@ -296,7 +296,7 @@ module.exports =
     definePosition obj.xml.A[0], 64
     definePosition obj.xml.A[1], 79
     definePosition obj.xml.B[0], 71
-    builder = new xml2js.Builder renderOpts: pretty: false
+    builder = new xmljs2.Builder renderOpts: pretty: false
     actual = builder.buildObject obj
     diffeq expected, actual
     test.finish()
@@ -312,7 +312,7 @@ module.exports =
     definePosition obj.xml.A[0], 64
     definePosition obj.xml.A[1], 79
     definePosition obj.xml.B[0], 71
-    builder = new xml2js.Builder renderOpts: pretty: false
+    builder = new xmljs2.Builder renderOpts: pretty: false
     actual = builder.buildObject obj
     diffeq expected, actual
     test.finish()
